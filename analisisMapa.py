@@ -226,8 +226,8 @@ def on_trackbar_change(x):
 
 
 # Abre el video desde la URL
-#cap = cv2.VideoCapture(url)
-cap = cv2.VideoCapture(0)
+cap = cv2.VideoCapture(url)
+#cap = cv2.VideoCapture(0)
 if not cap.isOpened():
     print("No se pudo conectar a la cámara en la URL proporcionada.")
 else:
