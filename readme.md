@@ -1,8 +1,6 @@
-Aquí tienes un ejemplo de un archivo `README.md` para tu proyecto:
-
 ---
 
-# Proyecto de Análisis de Tablero y Comunicación con Arduino
+# Reto de Robótica Móvil y Aprendizaje Reforzado
 
 Este proyecto utiliza **Python** para analizar un tablero mediante visión artificial y comunicarse con un robot a través de comandos seriales enviados a un Arduino. Está dividido en dos módulos principales: `analisisMapa` y `comunicacionArduino`.
 
