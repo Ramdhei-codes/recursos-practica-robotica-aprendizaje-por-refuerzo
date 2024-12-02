@@ -16,8 +16,8 @@ Este proyecto utiliza **Python** para analizar un tablero mediante visión artif
 
 1. **Clona este repositorio**:  
    ```bash
-   git clone <URL_DEL_REPOSITORIO>
-   cd <NOMBRE_DEL_REPOSITORIO>
+   git clone https://github.com/felipebuitragocarmona/recursos-practica-robotica-aprendizaje-por-refuerzo recursosRobticaAprendizajeReforzado
+   cd recursosRobticaAprendizajeReforzado
    ```
 
 2. **Crea y activa un entorno virtual**:  
