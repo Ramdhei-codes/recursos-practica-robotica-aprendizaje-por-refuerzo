@@ -1,8 +1,6 @@
-Aquí tienes un ejemplo de un archivo `README.md` para tu proyecto:
-
 ---
 
-# Proyecto de Análisis de Tablero y Comunicación con Arduino
+# Reto de Robótica Móvil y Aprendizaje Reforzado
 
 Este proyecto utiliza **Python** para analizar un tablero mediante visión artificial y comunicarse con un robot a través de comandos seriales enviados a un Arduino. Está dividido en dos módulos principales: `analisisMapa` y `comunicacionArduino`.
 
@@ -36,16 +34,17 @@ Este proyecto utiliza **Python** para analizar un tablero mediante visión artif
 
 - `analisisMapa.py`: Este módulo utiliza técnicas de visión artificial para analizar un tablero.  
   - **Funcionalidad principal**:
+    - Se debe configurar la IP de la cámara en la variable `url`
     - Detecta robots representados como círculos o triángulos.
-    - Genera un laberinto de dimensiones `n x m`.
+    - Genera un laberinto de dimensiones `n x m`siempre de manera aleatoria.
     - Retorna las coordenadas de los robots detectados en el tablero.
 
 - `comunicacionArduino.py`: Este módulo permite la comunicación serial con un robot controlado por un Arduino.  
   - **Comandos soportados**:
-    - `adelante`: Mueve el robot hacia adelante.
-    - `atras`: Mueve el robot hacia atrás.
-    - `derecha`: Gira o desplaza el robot hacia la derecha.
-    - `izquierda`: Gira o desplaza el robot hacia la izquierda.
+    - `w`: Mueve el robot hacia adelante.
+    - `s`: Mueve el robot hacia atrás.
+    - `d`: Gira o desplaza el robot hacia la derecha.
+    - `a`: Gira o desplaza el robot hacia la izquierda.
 
 ## Uso del proyecto
 
@@ -53,16 +52,17 @@ Este proyecto utiliza **Python** para analizar un tablero mediante visión artif
    ```bash
    python analisisMapa.py
    ```
-   Este archivo genera un laberinto de dimensiones configurables y muestra las coordenadas de los robots detectados.
+   Este archivo genera un laberinto de dimensiones configurables y muestra las coordenadas de los robots detectados. Recuerde configurar la variable `url` para activar la cámara ip. La variable `maze` corresponde a la estructura del laberinto, donde 0 es camino y 1 es obstáculo. Recuerde que el robot debe verificar en el recorrido de exploración que ese mapa sea correcto. El robot debe pasar por cada una de las casillas en la fase de reconocimiento.
 
 2. **Comunicación con Arduino**:  
-   Asegúrate de que el Arduino esté conectado y configurado para recibir comandos seriales.  
+   Asegúrate de que el Arduino esté conectado y configurado para recibir comandos seriales.  Para esto, primero debe agregar el dispositivo Bluetooth desde el sistema operativo, el robot se llama "MakeBlock". Luego verificar en el adiminstrador de dispositivos de Windows en la sección "Puertos COM y LPT) que puertos posibles hay conectados. Por último, dentro del script de comunicación cambie la variable "PORT".
+   
    Ejecuta `comunicacionArduino.py` para enviar comandos:  
    ```bash
    python comunicacionArduino.py
    ```
 
    Ejemplo de uso interactivo:  
-   - Ingresa los comandos `adelante`, `atras`, `derecha`, o `izquierda` según sea necesario.
+   - Ingresa los comandos `w`, `s`, `d`, o `a` según sea necesario.
 
 
