@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 import random
 # URL de DroidCam
-url = "http://192.168.16.139:4747/video"
+url = "http://192.168.253.94:4747/video"
 
 # Parámetros de la cuadrícula
 rows = 7  # Número de filas
@@ -191,7 +191,7 @@ def fill_cells(frame, matrix, alpha=0.7):
                 x1, y1 = j * cell_width, i * cell_height
                 x2, y2 = x1 + cell_width, y1 + cell_height
                 # Rellenar el cuadrante con color negro (translúcido)
-                cv2.rectangle(overlay, (x1, y1), (x2, y2), (0, 0, 0), -1)
+                cv2.rectangle(overlay, (x1, y1), (x2, y2), (0, 0, 255), -1)
 
     # Aplicar transparencia a los rectángulos negros
     cv2.addWeighted(overlay, alpha, frame, 1 - alpha, 0, frame)
@@ -212,7 +212,7 @@ def highlight_start_end(frame, rows, cols):
     # Coordenadas del final (rows-1, cols-1)
     x1_end, y1_end = (cols - 1) * cell_width, (rows - 1) * cell_height
     x2_end, y2_end = x1_end + cell_width, y1_end + cell_height
-    cv2.rectangle(overlay, (x1_end, y1_end), (x2_end, y2_end), (0, 0, 255), -1)  # Rojo
+    cv2.rectangle(overlay, (x1_end, y1_end), (x2_end, y2_end), (255, 0, 0), -1)  # Rojo
 
     # Agregar transparencia
     alpha = 0.5  # Nivel de transparencia
@@ -239,6 +239,7 @@ else:
     cv2.createTrackbar('Canny Th2', 'Ajustes', canny_threshold2, 255, on_trackbar_change)
     cv2.createTrackbar('Dilatacion', 'Ajustes', 2, 15, on_trackbar_change)
     maze = maze_generate(rows, cols)
+    print(maze)
     while True:
         ret, frame = cap.read()
         if not ret:
