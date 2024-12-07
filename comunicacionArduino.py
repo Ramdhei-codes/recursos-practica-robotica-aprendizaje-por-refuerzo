@@ -40,7 +40,7 @@ states = {
     5: [0, 0, 1, 0],
     6: [0, 0, 0, 1], 
     7: [0, 0, 0, 1],
-    8: [0, 0, 0, 0], 
+    8: [0, 0, 0, 0],  # Estado final
 }
 
 # Mapear direcciones al comando correspondiente
@@ -53,7 +53,14 @@ try:
     while True:
         print(f"\nEstado actual: {current_state}")
         direction = states.get(current_state, [0, 0, 0, 0])  # Obtener la dirección para el estado actual
-        if sum(direction) == 1:  # Validar que haya una sola dirección activa
+        
+        # Verificar si es el estado final
+        if direction == [0, 0, 0, 0]:
+            print("Recorrido completado. Finalizando...")
+            break
+        
+        # Validar que haya una sola dirección activa
+        if sum(direction) == 1:
             command_index = direction.index(1)
             command = direction_commands[command_index]
             send_command(command)  # Enviar el comando correspondiente
@@ -66,7 +73,7 @@ try:
             # Avanzar al siguiente estado (puedes personalizar esta lógica)
             current_state = (current_state + 1) % len(states)
         else:
-            print("Dirección inválida en el estado actual.")
+            print("Dirección inválida en el estado actual. Finalizando...")
             break
 
 except KeyboardInterrupt:
