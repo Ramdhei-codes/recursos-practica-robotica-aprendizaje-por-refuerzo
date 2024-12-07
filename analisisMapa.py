@@ -1,6 +1,7 @@
 import cv2
 import numpy as np
 import random
+import comunicacionArduino
 # URL de DroidCam
 url = "http://192.168.16.139:4747/video"
 
@@ -224,6 +225,14 @@ def on_trackbar_change(x):
     """Callback para manejar los cambios en las trackbars."""
     pass
 
+def move_robot(pos_info, policy, prev_move):
+    _, row, col, cell_index, x, y = pos_info
+    move = policy[cell_index]
+    if move.index(max(move)) == 0 and prev_move.index(max(move)) == 1:
+        pass
+        
+    
+
 
 # Abre el video desde la URL
 cap = cv2.VideoCapture(url)
@@ -238,7 +247,22 @@ else:
     cv2.createTrackbar('Canny Th1', 'Ajustes', canny_threshold1, 255, on_trackbar_change)
     cv2.createTrackbar('Canny Th2', 'Ajustes', canny_threshold2, 255, on_trackbar_change)
     cv2.createTrackbar('Dilatacion', 'Ajustes', 2, 15, on_trackbar_change)
-    maze = maze_generate(rows, cols)
+    #maze = maze_generate(rows, cols)
+    maze=[[0,0,0], [0,0,0], [0,0,0]]
+        # Política del mapa
+    policies = {
+        0: [0, 0, 0, 1],  # Moverse a la derecha
+        1: [0, 0, 0, 1],  # Moverse a la derecha
+        2: [0, 1, 0, 0],  # Moverse abajo
+        3: [0, 0, 1, 0],  # Moverse a la izquierda
+        4: [0, 0, 1, 0],  # Moverse a la izquierda
+        5: [0, 1, 0, 0],  # Moverse abajo
+        6: [0, 0, 0, 1],  # Moverse a la derecha
+        7: [0, 0, 0, 1],  # Moverse a la derecha
+        8: [0, 0, 0, 0],  # Detenerse
+    }
+    #q_table = q_learning(maze)
+    i = 0
     while True:
         ret, frame = cap.read()
         if not ret:
@@ -253,6 +277,9 @@ else:
         # Analizar el frame con los umbrales ajustados
         detected_shapes, frame_with_shapes = detect_shapes_in_image(frame, rows, cols, threshold1, threshold2,dilatacion)
         print(detected_shapes)
+        if i % 25 == 0:
+            move_robot(detected_shapes[0], policies)
+        i += 1
         # Dibujar la cuadrícula en el frame
         frame_with_grid = draw_grid(frame_with_shapes, rows, cols, thickness)
 
@@ -264,6 +291,7 @@ else:
         # Presiona 'q' para salir
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
+    
 
 # Al final de analisisMapa.py
 
