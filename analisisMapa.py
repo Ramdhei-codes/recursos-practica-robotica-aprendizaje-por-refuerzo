@@ -3,7 +3,7 @@ import numpy as np
 import random
 
 # URL de DroidCam
-url = "http://192.168.253.94:4747/video"
+url = "http://192.168.128.189:4747/video"
 
 # Parámetros de la cuadrícula
 rows = 3  # Número de filas
