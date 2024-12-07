@@ -1,7 +1,7 @@
 import serial
 import time
 
-# Confiqguración del puerto serial
+# Configuración del puerto serial
 PORT = "COM5"  # Cambia esto según el puerto asignado al Bluetooth
 BAUD_RATE = 115200  # Velocidad de comunicación
 
@@ -25,36 +25,49 @@ def send_command(command):
 
 # Función para leer datos del Arduino
 def read_from_arduino():
-    print("verificando arduino")
     if bt_connection.is_open and bt_connection.in_waiting > 0:
         data = bt_connection.readline().decode('utf-8').strip()
         return data
     return None
 
-# Menú de control
+# Diccionario de estados
+states = {
+    0: [0, 0, 0, 1],  
+    1: [0, 0, 0, 1], 
+    2: [0, 1, 0, 0],
+    3: [0, 1, 0, 0],
+    4: [0, 0, 1, 0],
+    5: [0, 0, 1, 0],
+    6: [0, 0, 0, 1], 
+    7: [0, 0, 0, 1],
+    8: [0, 0, 0, 0], 
+}
+
+# Mapear direcciones al comando correspondiente
+direction_commands = ['w', 's', 'd', 'a']  # arriba, abajo, derecha, izquierda
+
+# Estado inicial
+current_state = 0
+
 try:
     while True:
-        print("\nControl del mBot:")
-        print("w - Adelante")
-        print("s - Atrás")
-        print("a - Izquierda")
-        print("d - Derecha")
-        print("x - Detener")
-        print("q - Salir")
-        command = input("Ingresa un comando: ").strip().lower()
+        print(f"\nEstado actual: {current_state}")
+        direction = states.get(current_state, [0, 0, 0, 0])  # Obtener la dirección para el estado actual
+        if sum(direction) == 1:  # Validar que haya una sola dirección activa
+            command_index = direction.index(1)
+            command = direction_commands[command_index]
+            send_command(command)  # Enviar el comando correspondiente
 
-        if command == 'q':  # Salir del programa
-            print("Cerrando conexión...")
-            break
-        elif command in ['w', 's', 'a', 'd', 'x']:
-            send_command(command)  # Enviar el comando válido
+            # Leer datos del Arduino y mostrarlos en la consola
+            response = read_from_arduino()
+            if response:
+                print(f"Arduino dice: {response}")
+            
+            # Avanzar al siguiente estado (puedes personalizar esta lógica)
+            current_state = (current_state + 1) % len(states)
         else:
-            print("Comando no reconocido")
-
-        # Leer datos del Arduino y mostrarlos en la consola
-        response = read_from_arduino()
-        if response:
-            print(f"Arduino dice: {response}")
+            print("Dirección inválida en el estado actual.")
+            break
 
 except KeyboardInterrupt:
     print("\nInterrupción por teclado.")
