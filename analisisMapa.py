@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 import random
 # URL de DroidCam
-url = "http://192.168.253.94:4747/video"
+url = "http://192.168.16.139:4747/video"
 
 # Parámetros de la cuadrícula
 rows = 7  # Número de filas
@@ -191,7 +191,7 @@ def fill_cells(frame, matrix, alpha=0.7):
                 x1, y1 = j * cell_width, i * cell_height
                 x2, y2 = x1 + cell_width, y1 + cell_height
                 # Rellenar el cuadrante con color negro (translúcido)
-                cv2.rectangle(overlay, (x1, y1), (x2, y2), (0, 0, 255), -1)
+                cv2.rectangle(overlay, (x1, y1), (x2, y2), (0, 0, 0), -1)
 
     # Aplicar transparencia a los rectángulos negros
     cv2.addWeighted(overlay, alpha, frame, 1 - alpha, 0, frame)
@@ -212,7 +212,7 @@ def highlight_start_end(frame, rows, cols):
     # Coordenadas del final (rows-1, cols-1)
     x1_end, y1_end = (cols - 1) * cell_width, (rows - 1) * cell_height
     x2_end, y2_end = x1_end + cell_width, y1_end + cell_height
-    cv2.rectangle(overlay, (x1_end, y1_end), (x2_end, y2_end), (255, 0, 0), -1)  # Rojo
+    cv2.rectangle(overlay, (x1_end, y1_end), (x2_end, y2_end), (0, 0, 255), -1)  # Rojo
 
     # Agregar transparencia
     alpha = 0.5  # Nivel de transparencia
@@ -239,7 +239,6 @@ else:
     cv2.createTrackbar('Canny Th2', 'Ajustes', canny_threshold2, 255, on_trackbar_change)
     cv2.createTrackbar('Dilatacion', 'Ajustes', 2, 15, on_trackbar_change)
     maze = maze_generate(rows, cols)
-    print(maze)
     while True:
         ret, frame = cap.read()
         if not ret:
@@ -265,6 +264,79 @@ else:
         # Presiona 'q' para salir
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
+
+# Al final de analisisMapa.py
+
+def get_next_direction(policy):
+    """
+    Retorna el movimiento basado en la política.
+    Orden: [arriba, abajo, izquierda, derecha]
+    """
+    directions = [(-1, 0), (1, 0), (0, -1), (0, 1)]  # Movimientos relativos
+    for i, move in enumerate(policy):
+        if move == 1:
+            return directions[i]
+    return None  # Si no hay movimiento, retorna None
+
+def execute_policy(grid_size, cell_width, cell_height, policies, initial_position, send_command):
+    """
+    Ejecuta los movimientos del robot en un mapa basado en una política.
+    """
+    current_x, current_y = initial_position  # Posición inicial del robot
+    rows, cols = grid_size
+    cell_index = lambda x, y: (y // cell_height) * cols + (x // cell_width)
+
+    while True:
+        # Obtener la celda actual
+        current_cell_index = cell_index(current_x, current_y)
+
+        # Consultar la política de la celda actual
+        if current_cell_index not in policies:
+            print(f"No hay política definida para la celda {current_cell_index}.")
+            break
+
+        policy = policies[current_cell_index]
+
+        # Detenerse si la política es [0, 0, 0, 0]
+        if policy == [0, 0, 0, 0]:
+            print(f"El robot se detiene en la celda {current_cell_index}.")
+            send_command("x")  # Enviar comando de detener
+            break
+
+        # Obtener la dirección del próximo movimiento
+        direction = get_next_direction(policy)
+        if direction is None:
+            print(f"No hay movimiento definido en la celda {current_cell_index}.")
+            break
+
+        dx, dy = direction
+
+        # Simular movimiento
+        print(f"Ejecutando movimiento desde celda {current_cell_index} en dirección {direction}.")
+
+        # Enviar comando al robot
+        if dx == -1:  # Arriba
+            send_command("w")
+        elif dx == 1:  # Abajo
+            send_command("s")
+        elif dy == -1:  # Izquierda
+            send_command("a")
+        elif dy == 1:  # Derecha
+            send_command("d")
+
+        # Actualizar posición simulada
+        next_x = current_x + dx * cell_width // 4  # Paso ajustado
+        next_y = current_y + dy * cell_height // 4
+
+        # Verificar si se cambió de celda
+        new_cell_index = cell_index(next_x, next_y)
+        if new_cell_index != current_cell_index:
+            print(f"Celda cambiada: {current_cell_index} -> {new_cell_index}")
+            current_x, current_y = next_x, next_y
+        else:
+            print(f"No se cambió de celda. Repitiendo movimiento...")
+            current_x, current_y = next_x, next_y
+
 
 # Libera recursos
 cap.release()
