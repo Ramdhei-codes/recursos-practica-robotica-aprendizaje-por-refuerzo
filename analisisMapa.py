@@ -230,83 +230,8 @@ def on_trackbar_change(x):
     """Callback para manejar los cambios en las trackbars."""
     pass
 
-def move_robot(pos_info, policy, prev_move):
-    move = policy[pos_info['cell_index']]
-    if prev_move is not None:
-        if move.index(max(move)) == 0 and prev_move.index(max(move)) == 1:
-            if prev_move['x'] > pos_info['x'] + 10:
-                comunicacionArduino.send_command('s')
-            comunicacionArduino.send_command("a")
-            comunicacionArduino.send_command("w")
-        if move.index(max(move)) == 0 and prev_move.index(max(move)) == 2:
-            if prev_move['y'] > pos_info['y'] + 10:
-                comunicacionArduino.send_command('s')
-            comunicacionArduino.send_command("a")
-            comunicacionArduino.send_command("a")
-            comunicacionArduino.send_command("w")
-        if move.index(max(move)) == 0 and prev_move.index(max(move)) == 3:
-            if prev_move['y'] > pos_info['y'] + 10:
-                comunicacionArduino.send_command('s')
-            comunicacionArduino.send_command("d")
-            comunicacionArduino.send_command("d")
-            comunicacionArduino.send_command("w")
-        if move.index(max(move)) == 1 and prev_move.index(max(move)) == 0:
-            if prev_move['y'] > pos_info['y'] + 10:
-                comunicacionArduino.send_command('s')
-            comunicacionArduino.send_command("d")
-            comunicacionArduino.send_command("d")
-            comunicacionArduino.send_command("w")
-        if move.index(max(move)) == 1 and prev_move.index(max(move)) == 2:
-            if prev_move['y'] > pos_info['y'] + 10:
-                comunicacionArduino.send_command('s')
-            comunicacionArduino.send_command("d")
-            comunicacionArduino.send_command("d")
-            comunicacionArduino.send_command("w")
-        if move.index(max(move)) == 1 and prev_move.index(max(move)) == 3:
-            if prev_move['y'] > pos_info['y'] + 10:
-                comunicacionArduino.send_command('s')
-            comunicacionArduino.send_command("d")
-            comunicacionArduino.send_command("d")
-            comunicacionArduino.send_command("w")
-        if move.index(max(move)) == 2 and prev_move.index(max(move)) == 0:
-            if prev_move['y'] > pos_info['y'] + 10:
-                comunicacionArduino.send_command('s')
-            comunicacionArduino.send_command("d")
-            comunicacionArduino.send_command("d")
-            comunicacionArduino.send_command("w")
-        if move.index(max(move)) == 2 and prev_move.index(max(move)) == 1:
-            if prev_move['y'] > pos_info['y'] + 10:
-                comunicacionArduino.send_command('s')
-            comunicacionArduino.send_command("d")
-            comunicacionArduino.send_command("d")
-            comunicacionArduino.send_command("w")
-        if move.index(max(move)) == 2 and prev_move.index(max(move)) == 3:
-            if prev_move['y'] > pos_info['y'] + 10:
-                comunicacionArduino.send_command('s')
-            comunicacionArduino.send_command("d")
-            comunicacionArduino.send_command("d")
-            comunicacionArduino.send_command("w")
-        if move.index(max(move)) == 3 and prev_move.index(max(move)) == 0:
-            if prev_move['y'] > pos_info['y'] + 10:
-                comunicacionArduino.send_command('s')
-            comunicacionArduino.send_command("d")
-            comunicacionArduino.send_command("d")
-            comunicacionArduino.send_command("w")
-        if move.index(max(move)) == 3 and prev_move.index(max(move)) == 1:
-            if prev_move['y'] > pos_info['y'] + 10:
-                comunicacionArduino.send_command('s')
-            comunicacionArduino.send_command("d")
-            comunicacionArduino.send_command("d")
-            comunicacionArduino.send_command("w")
-        if move.index(max(move)) == 3 and prev_move.index(max(move)) == 2:
-            if prev_move['y'] > pos_info['y'] + 10:
-                comunicacionArduino.send_command('s')
-            comunicacionArduino.send_command("d")
-            comunicacionArduino.send_command("d")
-            comunicacionArduino.send_command("w")
-    else:
-        comunicacionArduino.send_command('w')
-        
+def move_robot(pos_info, policy):
+    rotation_times = 10
     return pos_info
         
     
@@ -377,7 +302,7 @@ else:
         if i % 25 == 0:
             previous_move = None
             if detected_shapes[0] is not None:
-                previous_move = move_robot(detected_shapes[0], policies, None)
+                previous_move = move_robot(detected_shapes[0], policies)
         i += 1
         # Dibujar la cuadrícula en el frame
         frame_with_grid = draw_grid(frame_with_shapes, rows, cols, thickness)
