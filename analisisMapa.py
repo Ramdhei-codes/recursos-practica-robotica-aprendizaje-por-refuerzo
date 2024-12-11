@@ -3,11 +3,11 @@ import numpy as np
 import random
 import comunicacionArduino
 # URL de DroidCam
-url = "http://192.168.16.139:4747/video"
+url = "http://192.168.128.189:4747/video"
 
 # Parámetros de la cuadrícula
-rows = 7  # Número de filas
-cols = 7  # Número de columnas
+rows = 3  # Número de filas
+cols = 3  # Número de columnas
 thickness = 1  # Grosor de las líneas
 
 # Valores iniciales de Canny
@@ -75,6 +75,7 @@ def detect_shapes_in_image(image, rows, cols, threshold1, threshold2,dilatacion)
     cell_height = height // rows
     cell_width = width // cols
 
+
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
     # Umbral inverso para detectar regiones negras
@@ -95,6 +96,8 @@ def detect_shapes_in_image(image, rows, cols, threshold1, threshold2,dilatacion)
             row = center_y // cell_height
             col = center_x // cell_width
             cell_index = row * cols + col  # Índice de la celda
+            cell_center_x = col * cell_width + cell_width // 2
+            cell_center_y = row * cell_height + cell_height // 2
 
             # Dibujar círculo
             cv2.circle(image, (center_x, center_y), radius, (0, 255, 0), 2)
@@ -122,10 +125,12 @@ def detect_shapes_in_image(image, rows, cols, threshold1, threshold2,dilatacion)
                 "col": col,
                 "cell_index": cell_index,
                 "x":center_x,
-                "y":center_y
+                "y":center_y,
+                "cell_center_x":cell_center_x,
+                "cell_center_y": cell_center_y,
             })
+            image = draw_dotted_line_in_cell(image, cell_center_x, cell_center_y, cell_width, cell_height)
 
-    imagenGris = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     bordes = cv2.Canny(gray, threshold1, threshold2)
     kernel = np.ones((dilatacion, dilatacion), np.uint8)
     bordes = cv2.dilate(bordes, kernel)
@@ -165,39 +170,39 @@ def detect_shapes_in_image(image, rows, cols, threshold1, threshold2,dilatacion)
                     (255, 255, 255),
                     2
                 )
+                cell_center_x = col * cell_width + cell_width // 2
+                cell_center_y = row * cell_height + cell_height // 2
+
                 detected_shapes.append({
                     "shape": "triangle",
                     "row": row,
                     "col": col,
                     "cell_index": cell_index,
                     "x": center_x,
-                    "y": center_y
+                    "y": center_y,
+                    "cell_center_x": cell_center_x,
+                    "cell_center_y": cell_center_y,
                 })
+                image=draw_dotted_line_in_cell(image, cell_center_x, cell_center_y, cell_width, cell_height)
                 break
-
     return detected_shapes, image
-def fill_cells(frame, matrix, alpha=0.7):
-    """Rellena de color negro translúcido los cuadrantes correspondientes a los valores '1' en la matriz."""
-    rows, cols = len(matrix), len(matrix[0])
-    height, width, _ = frame.shape
-    cell_height = height // rows
-    cell_width = width // cols
 
-    overlay = frame.copy()  # Hacemos una copia para aplicar el color translúcido
+def draw_dotted_line_in_cell(image, cell_center_x, cell_center_y, cell_width, cell_height):
+    """Dibuja una línea punteada roja dentro de la celda en los ejes del centro de la celda."""
+    # Definir los límites de la celda
+    cell_left = cell_center_x - cell_width // 2
+    cell_right = cell_center_x + cell_width // 2
+    cell_top = cell_center_y - cell_height // 2
+    cell_bottom = cell_center_y + cell_height // 2
 
-    for i in range(rows):
-        for j in range(cols):
-            if matrix[i][j] == 1:
-                # Coordenadas del cuadrante
-                x1, y1 = j * cell_width, i * cell_height
-                x2, y2 = x1 + cell_width, y1 + cell_height
-                # Rellenar el cuadrante con color negro (translúcido)
-                cv2.rectangle(overlay, (x1, y1), (x2, y2), (0, 0, 0), -1)
+    # Dibujar línea punteada roja en el eje horizontal
+    for x in range(cell_left, cell_right, 10):  # Incremento para punteado
+        cv2.line(image, (x, cell_center_y), (x + 5, cell_center_y), (0, 0, 255), 1)
 
-    # Aplicar transparencia a los rectángulos negros
-    cv2.addWeighted(overlay, alpha, frame, 1 - alpha, 0, frame)
-
-    return frame
+    # Dibujar línea punteada roja en el eje vertical
+    for y in range(cell_top, cell_bottom, 10):  # Incremento para punteado
+        cv2.line(image, (cell_center_x, y), (cell_center_x, y + 5), (0, 0, 255), 1)
+    return image
 def highlight_start_end(frame, rows, cols):
     """Colorea en translúcido verde (0,0) y rojo (rows-1, cols-1)."""
     height, width, _ = frame.shape
@@ -226,13 +231,105 @@ def on_trackbar_change(x):
     pass
 
 def move_robot(pos_info, policy, prev_move):
-    _, row, col, cell_index, x, y = pos_info
-    move = policy[cell_index]
-    if move.index(max(move)) == 0 and prev_move.index(max(move)) == 1:
-        pass
+    move = policy[pos_info['cell_index']]
+    if prev_move is not None:
+        if move.index(max(move)) == 0 and prev_move.index(max(move)) == 1:
+            if prev_move['x'] > pos_info['x'] + 10:
+                comunicacionArduino.send_command('s')
+            comunicacionArduino.send_command("a")
+            comunicacionArduino.send_command("w")
+        if move.index(max(move)) == 0 and prev_move.index(max(move)) == 2:
+            if prev_move['y'] > pos_info['y'] + 10:
+                comunicacionArduino.send_command('s')
+            comunicacionArduino.send_command("a")
+            comunicacionArduino.send_command("a")
+            comunicacionArduino.send_command("w")
+        if move.index(max(move)) == 0 and prev_move.index(max(move)) == 3:
+            if prev_move['y'] > pos_info['y'] + 10:
+                comunicacionArduino.send_command('s')
+            comunicacionArduino.send_command("d")
+            comunicacionArduino.send_command("d")
+            comunicacionArduino.send_command("w")
+        if move.index(max(move)) == 1 and prev_move.index(max(move)) == 0:
+            if prev_move['y'] > pos_info['y'] + 10:
+                comunicacionArduino.send_command('s')
+            comunicacionArduino.send_command("d")
+            comunicacionArduino.send_command("d")
+            comunicacionArduino.send_command("w")
+        if move.index(max(move)) == 1 and prev_move.index(max(move)) == 2:
+            if prev_move['y'] > pos_info['y'] + 10:
+                comunicacionArduino.send_command('s')
+            comunicacionArduino.send_command("d")
+            comunicacionArduino.send_command("d")
+            comunicacionArduino.send_command("w")
+        if move.index(max(move)) == 1 and prev_move.index(max(move)) == 3:
+            if prev_move['y'] > pos_info['y'] + 10:
+                comunicacionArduino.send_command('s')
+            comunicacionArduino.send_command("d")
+            comunicacionArduino.send_command("d")
+            comunicacionArduino.send_command("w")
+        if move.index(max(move)) == 2 and prev_move.index(max(move)) == 0:
+            if prev_move['y'] > pos_info['y'] + 10:
+                comunicacionArduino.send_command('s')
+            comunicacionArduino.send_command("d")
+            comunicacionArduino.send_command("d")
+            comunicacionArduino.send_command("w")
+        if move.index(max(move)) == 2 and prev_move.index(max(move)) == 1:
+            if prev_move['y'] > pos_info['y'] + 10:
+                comunicacionArduino.send_command('s')
+            comunicacionArduino.send_command("d")
+            comunicacionArduino.send_command("d")
+            comunicacionArduino.send_command("w")
+        if move.index(max(move)) == 2 and prev_move.index(max(move)) == 3:
+            if prev_move['y'] > pos_info['y'] + 10:
+                comunicacionArduino.send_command('s')
+            comunicacionArduino.send_command("d")
+            comunicacionArduino.send_command("d")
+            comunicacionArduino.send_command("w")
+        if move.index(max(move)) == 3 and prev_move.index(max(move)) == 0:
+            if prev_move['y'] > pos_info['y'] + 10:
+                comunicacionArduino.send_command('s')
+            comunicacionArduino.send_command("d")
+            comunicacionArduino.send_command("d")
+            comunicacionArduino.send_command("w")
+        if move.index(max(move)) == 3 and prev_move.index(max(move)) == 1:
+            if prev_move['y'] > pos_info['y'] + 10:
+                comunicacionArduino.send_command('s')
+            comunicacionArduino.send_command("d")
+            comunicacionArduino.send_command("d")
+            comunicacionArduino.send_command("w")
+        if move.index(max(move)) == 3 and prev_move.index(max(move)) == 2:
+            if prev_move['y'] > pos_info['y'] + 10:
+                comunicacionArduino.send_command('s')
+            comunicacionArduino.send_command("d")
+            comunicacionArduino.send_command("d")
+            comunicacionArduino.send_command("w")
+    else:
+        comunicacionArduino.send_command('w')
+        
+    return pos_info
         
     
+def fill_cells(frame, matrix, alpha=0.7):
+    """Rellena de color negro translúcido los cuadrantes correspondientes a los valores '1' en la matriz."""
+    rows, cols = len(matrix), len(matrix[0])
+    height, width, _ = frame.shape
+    cell_height = height // rows
+    cell_width = width // cols
 
+    overlay = frame.copy()  # Hacemos una copia para aplicar el color translúcido
+
+    for i in range(rows):
+        for j in range(cols):
+            if matrix[i][j] == 1:
+                # Coordenadas del cuadrante
+                x1, y1 = j * cell_width, i * cell_height
+                x2, y2 = x1 + cell_width, y1 + cell_height
+                # Rellenar el cuadrante con color negro (translúcido)
+                cv2.rectangle(overlay, (x1, y1), (x2, y2), (0, 0, 255), -1)
+
+    # Aplicar transparencia a los rectángulos negros
+    cv2.addWeighted(overlay, alpha, frame, 1 - alpha, 0, frame)
 
 # Abre el video desde la URL
 cap = cv2.VideoCapture(url)
@@ -278,12 +375,14 @@ else:
         detected_shapes, frame_with_shapes = detect_shapes_in_image(frame, rows, cols, threshold1, threshold2,dilatacion)
         print(detected_shapes)
         if i % 25 == 0:
-            move_robot(detected_shapes[0], policies)
+            previous_move = None
+            if detected_shapes[0] is not None:
+                previous_move = move_robot(detected_shapes[0], policies, None)
         i += 1
         # Dibujar la cuadrícula en el frame
         frame_with_grid = draw_grid(frame_with_shapes, rows, cols, thickness)
 
-        frame=fill_cells(frame_with_grid,maze)
+        fill_cells(frame_with_grid,maze)
         frame = highlight_start_end(frame, rows, cols)
         # Mostrar el frame con los ajustes
         cv2.imshow('Cuadrícula con análisis', frame_with_grid)

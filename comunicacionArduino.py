@@ -2,7 +2,7 @@ import serial
 import time
 
 # Confiqguración del puerto serial
-PORT = "COM6"  # Cambia esto según el puerto asignado al Bluetooth
+PORT = "COM3"  # Cambia esto según el puerto asignado al Bluetooth
 BAUD_RATE = 115200  # Velocidad de comunicación
 
 # Crear la conexión serial
@@ -31,36 +31,36 @@ def read_from_arduino():
         return data
     return None
 
-# Menú de control
-try:
-    while True:
-        print("\nControl del mBot:")
-        print("w - Adelante")
-        print("s - Atrás")
-        print("a - Izquierda")
-        print("d - Derecha")
-        print("x - Detener")
-        print("q - Salir")
-        command = input("Ingresa un comando: ").strip().lower()
+# # Menú de control
+# try:
+#     while True:
+#         print("\nControl del mBot:")
+#         print("w - Adelante")
+#         print("s - Atrás")
+#         print("a - Izquierda")
+#         print("d - Derecha")
+#         print("x - Detener")
+#         print("q - Salir")
+#         command = input("Ingresa un comando: ").strip().lower()
 
-        if command == 'q':  # Salir del programa
-            print("Cerrando conexión...")
-            break
-        elif command in ['w', 's', 'a', 'd', 'x']:
-            send_command(command)  # Enviar el comando válido
-        else:
-            print("Comando no reconocido")
+#         if command == 'q':  # Salir del programa
+#             print("Cerrando conexión...")
+#             break
+#         elif command in ['w', 's', 'a', 'd', 'x']:
+#             send_command(command)  # Enviar el comando válido
+#         else:
+#             print("Comando no reconocido")
 
-        # Leer datos del Arduino y mostrarlos en la consola
-        response = read_from_arduino()
-        if response:
-            print(f"Arduino dice: {response}")
+#         # Leer datos del Arduino y mostrarlos en la consola
+#         response = read_from_arduino()
+#         if response:
+#             print(f"Arduino dice: {response}")
 
-except KeyboardInterrupt:
-    print("\nInterrupción por teclado.")
+# except KeyboardInterrupt:
+#     print("\nInterrupción por teclado.")
 
-finally:
-    # Cerrar la conexión al finalizar
-    if bt_connection.is_open:
-        bt_connection.close()
-        print("Conexión cerrada.")
+# finally:
+#     # Cerrar la conexión al finalizar
+#     if bt_connection.is_open:
+#         bt_connection.close()
+#         print("Conexión cerrada.")
