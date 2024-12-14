@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 import random
 import math
-from rl_model import RobotEnvironment
+from rl_model import RobotEnvironment, select_algorithm
 
 from comunicacionArduino import send_command
 # URL de DroidCam
@@ -267,86 +267,6 @@ def highlight_start_end(frame, rows, cols):
 def on_trackbar_change(x):
     """Callback para manejar los cambios en las trackbars."""
     pass
-
-"""def mover_robot(tablaQ, cell_index, x, y,angulo):
-    
-    Mueve al robot basado en la tabla Q y actualiza su posición.
-    Envía comandos al Arduino para ejecutar el movimiento.
-    
-    
-    cx=x
-    cy=y
-    # Determinar la acción basada en las probabilidades de la tabla Q
-    accion = np.argmax(tablaQ[cell_index])
-    send_command('w')
-    # Llamada a la función detect_shapes_in_image
-    detected_shapes, _ = detect_shapes_in_image(frame, rows, cols, qr_detector)
-    #angulo 0 adelante, 90 izquierda, 180 atras, 270 derecha
-    if detected_shapes:
-        for shape in detected_shapes:
-            if qr_detector:
-                # Obtener las coordenadas x, y del círculo
-                nuevoDx = shape["x"]
-                NuevoDy = shape["y"]
-                print(f"Coordenadas del triángulo: x={nuevoDx}, y={NuevoDy}")
-
-                #arriba
-                if accion == 0:
-                    if cx > nuevoDx:
-                        send_command('s')
-                        send_command('d')
-                    elif cx < nuevoDx:
-                        send_command('s')
-                        send_command('a')
-                    elif cy > NuevoDy:
-                        send_command('s')
-                        send_command('d')
-                    elif cy < NuevoDy:
-                        send_command('w')
-                        
-                #abajo
-                if accion == 1:
-                    if cx > nuevoDx:
-                        send_command('s')
-                        send_command('d')
-                    elif cx < nuevoDx:
-                        send_command('s')
-                        send_command('a')
-                    elif cy > NuevoDy:
-                        send_command('w')
-                    elif cy < NuevoDy: 
-                        send_command('s')
-                        send_command('d')
-                        
-                #izquierda 
-                if accion ==2:
-                    if cx > nuevoDx:
-                        send_command('s')
-                        send_command('a')
-                        send_command('a')
-                    elif cx < nuevoDx:
-                        send_command('W')
-                    elif cy > NuevoDy:
-                        send_command('s')
-                        send_command('d')
-                        send_command('d')
-                    elif cy < NuevoDy: 
-                        send_command('w')
-                #derecha      
-                if accion ==3:
-                    if cx > nuevoDx:
-                        send_command('W')
-                    elif cx < nuevoDx:
-                        send_command('s')
-                        send_command('a')
-                        send_command('a')
-                    elif cy > NuevoDy:
-                        send_command('s')
-                        send_command('d')
-                        send_command('d')
-                    elif cy < NuevoDy: 
-                        send_command('w')
-        """
         
 def mover_robot(tablaQ, cell_index, x, y,angulo, center_x, center_y, politica_actual, politica_anterior):
     tolerancia=20
@@ -413,7 +333,14 @@ else:
     cv2.createTrackbar('Canny Th2', 'Ajustes', canny_threshold2, 255, on_trackbar_change)
     cv2.createTrackbar('Dilatacion', 'Ajustes', 2, 15, on_trackbar_change)
     maze = maze_generate(rows, cols)
+    # Hiperparámetros
+    ALPHA = 0.4
+    GAMMA = 0.999
+    EPSILON = 0.1 # (Probabilidad de escoger mejor acción = 1-0.1 = 0.9)
+    K = 2000
     robot = RobotEnvironment(maze)
+    
+    probabilidades = select_algorithm(ALPHA, GAMMA, EPSILON, K, robot, 'sarsa')
     
     #tablaQ=aplicarQlearning(maze)
 
