@@ -229,10 +229,6 @@ def highlight_start_end(frame, rows, cols):
 def on_trackbar_change(x):
     """Callback para manejar los cambios en las trackbars."""
     pass
-
-def move_robot(pos_info, policy):
-    rotation_times = 10
-    return pos_info
         
     
 def fill_cells(frame, matrix, alpha=0.7):
@@ -255,6 +251,15 @@ def fill_cells(frame, matrix, alpha=0.7):
 
     # Aplicar transparencia a los rectángulos negros
     cv2.addWeighted(overlay, alpha, frame, 1 - alpha, 0, frame)
+    
+def move_robot(pos_info, policy, prev_move):
+    prev_index = prev_move['cell_index']
+    index = pos_info['cell_index']
+    if index != prev_index:
+        pass
+    else:
+        comunicacionArduino.send_command('w')
+    return pos_info
 
 # Abre el video desde la URL
 cap = cv2.VideoCapture(url)
@@ -300,9 +305,9 @@ else:
         detected_shapes, frame_with_shapes = detect_shapes_in_image(frame, rows, cols, threshold1, threshold2,dilatacion)
         print(detected_shapes)
         if i % 25 == 0:
-            previous_move = None
-            if detected_shapes[0] is not None:
-                previous_move = move_robot(detected_shapes[0], policies)
+            previous_move = 0
+            if len(detected_shapes) > 0:
+                previous_move = move_robot(detected_shapes[0], policies, previous_move)
         i += 1
         # Dibujar la cuadrícula en el frame
         frame_with_grid = draw_grid(frame_with_shapes, rows, cols, thickness)
