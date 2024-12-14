@@ -304,9 +304,9 @@ else:
         # Analizar el frame con los umbrales ajustados
         detected_shapes, frame_with_shapes = detect_shapes_in_image(frame, rows, cols, threshold1, threshold2,dilatacion)
         print(detected_shapes)
-        if i % 25 == 0:
-            previous_move = 0
-            if len(detected_shapes) > 0:
+     
+        previous_move = 0
+        if len(detected_shapes) > 0:
                 previous_move = move_robot(detected_shapes[0], policies, previous_move)
         i += 1
         # Dibujar la cuadrícula en el frame

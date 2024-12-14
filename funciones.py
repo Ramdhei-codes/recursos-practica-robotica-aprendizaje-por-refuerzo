@@ -34,9 +34,9 @@ def inicializar_Q(nS, nA, tipo='ones'):
     Retorna la matriz Q(S,A)
     '''
     if tipo == 'ones':
-    	Q = np.ones((nS,nA))
+        Q = np.ones((nS,nA))
     elif tipo == 'random':
-    	Q = np.random.rand(nS,nA)
+        Q = np.random.rand(nS,nA)
     
     return Q
 

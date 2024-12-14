@@ -130,11 +130,17 @@ maze = [[0, 0, 0, 1], [1, 1, 0, 1], [0, 0, 0, 0], [1, 1, 0, 0]]
 
 model = RobotEnvironment(maze)
 
-tabla_Q, ret = sarsa(model, ALPHA, GAMMA, EPSILON, len(model.states.keys()), 4, K)
-tabla_Q_learning, ret_q_learning = qlearning(model, ALPHA, GAMMA, EPSILON, len(model.states.keys()), 4, K)
+def select_algorithm(model, ALPHA, GAMMA, EPSILON, K, algorithm):
+    if algorithm == 'sarsa':
+        tabla_Q, _ret = sarsa(model, ALPHA, GAMMA, EPSILON, len(model.states.keys()), 4, K)
+        return generar_politica(tabla_Q)
+    elif algorithm == 'qlearning':
+        tabla_Q, _ret = qlearning(model, ALPHA, GAMMA, EPSILON, len(model.states.keys()), 4, K)
+        return generar_politica(tabla_Q)
+    else:
+        raise ValueError('Algoritmo no válido')
 
-print(tabla_Q)
-print(generar_politica(tabla_Q))
+
     
     
     
