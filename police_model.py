@@ -161,12 +161,13 @@ GAMMA = 0.999
 EPSILON = 0.1 # (Probabilidad de escoger mejor acción = 1-0.1 = 0.9)
 K = 2000
 
-tabla_Q, _ret = sarsa(model, ALPHA, GAMMA, EPSILON, len(model.states.keys()), 4, K)
+def select_algorithm_policies(model, ALPHA, GAMMA, EPSILON, K, algorithm):
+    if algorithm == 'sarsa':
+        tabla_Q, _ret = sarsa(model, ALPHA, GAMMA, EPSILON, len(model.states.keys()), 4, K)
+        return model.generar_politica_policias(tabla_Q)
+    elif algorithm == 'qlearning':
+        tabla_Q, _ret = qlearning(model, ALPHA, GAMMA, EPSILON, len(model.states.keys()), 4, K)
+        return model.generar_politica_policias(tabla_Q)
 
-from utils import print_readable_dict
-print(tabla_Q)
-policy = model.generar_politica_policias(tabla_Q)
-
-print_readable_dict(policy)
 
 
