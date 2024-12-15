@@ -88,5 +88,53 @@ q_table = np.array([
     [  1.        ,   1.        ,   1.        ,   1.        ]
 ])
 
-policies = generar_politica(q_table)
-print(policies)
+
+
+def generar_estados_laberinto(laberinto):
+    """
+    Genera todos los estados posibles para un modelo de Policías y Ladrones
+    y calcula las recompensas asociadas.
+
+    Args:
+        laberinto (list[list[int]]): Matriz n x n que representa el laberinto.
+
+    Returns:
+        dict: Diccionario donde las claves son los estados en formato (rol, pos_pol, pos_lad)
+            y los valores son las recompensas asociadas.
+    """
+    n = len(laberinto)  # Tamaño del laberinto (asume que es cuadrado)
+    num_casillas = n * n
+    estados = {}
+
+    def calcular_distancia_manhattan(pos1, pos2):
+        x1, y1 = divmod(pos1, n)
+        x2, y2 = divmod(pos2, n)
+        return abs(x1 - x2) + abs(y1 - y2)
+
+    for pos_pol in range(num_casillas):
+        for pos_lad in range(num_casillas):
+            for rol in [0, 1]:  # 0: Policía, 1: Ladrón
+                estado = (rol, pos_pol, pos_lad)
+
+                if rol == 0:  # Policía
+                    if pos_pol == pos_lad:
+                        recompensa = 50  # Captura al ladrón
+                    else:
+                        i, j = divmod(pos_pol, n)
+                        recompensa = -1 if laberinto[i][j] == 0 else -20
+                else:  # Ladrón
+                    if pos_pol == pos_lad:
+                        recompensa = -50  # Capturado por el policía
+                    else:
+                        recompensa = calcular_distancia_manhattan(pos_pol, pos_lad)
+
+                estados[estado] = recompensa
+
+    return estados
+
+maze = maze_generate(3,3)
+print(maze)
+estados = generar_estados_laberinto(maze)
+print(estados)
+print(len(estados))
+

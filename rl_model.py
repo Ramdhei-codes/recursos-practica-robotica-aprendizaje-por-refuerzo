@@ -91,14 +91,6 @@ class RobotEnvironment:
         filas, columnas = len(self.maze), len(self.maze[0])
         estado_inicial = self.current_position[0] * columnas + self.current_position[1] + 1
         return estado_inicial
-    
-class PoliceAndThievesEnvironment:
-    def __init__(self, maze):
-        self.maze = maze
-        
-    
-
-
 
 def generar_politica(tabla_q):
     """
