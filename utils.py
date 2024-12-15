@@ -132,9 +132,23 @@ def generar_estados_laberinto(laberinto):
 
     return estados
 
-maze = maze_generate(3,3)
-print(maze)
-estados = generar_estados_laberinto(maze)
-print(estados)
-print(len(estados))
+import json
+
+def print_readable_dict(data):
+    """
+        Prints a dictionary with tuple keys and list of integers as values in a readable format.
+
+        Args:
+            data (dict): Dictionary with tuple keys and list of integers as values.
+    """
+    if not isinstance(data, dict):
+        print("Input is not a dictionary.")
+        return
+    
+    for key, value in data.items():
+        # Convert tuple key and list value to strings for better formatting
+        key_str = f"({', '.join(map(str, key))})"
+        value_str = f"[{', '.join(map(str, value))}]"
+        print(f"{key_str}: {value_str}")
+
 

@@ -18,6 +18,7 @@ class PoliceEnvironment:
         self.role = 0
         self.info = ''
         self.state_to_index = {state: idx for idx, state in enumerate(self.states.keys())}
+        self.index_to_state = {idx: state for state, idx in self.state_to_index.items()}
 
 
     def generar_estados_laberinto(self, laberinto):
@@ -122,6 +123,34 @@ class PoliceEnvironment:
         self.estado_actual = (0, 0, (self.n * self.m) -1)
         return self.state_to_index[self.estado_actual]
     
+    def generar_politica_policias(self, tabla_q):
+        """
+        Genera la política a partir de una tabla Q.
+
+        Args:
+            tabla_q (np.ndarray): Matriz Q con valores de estados y acciones.
+
+        Returns:
+            dict: Diccionario donde las claves son los estados y los valores son listas
+                de acciones en formato [arriba, abajo, izquierda, derecha].
+        """
+        n_estados, n_acciones = tabla_q.shape
+        policies = {}
+
+        for estado in range(n_estados):
+            # Obtener la acción con el valor máximo para el estado actual
+            estado_tupla = self.index_to_state[estado]
+            accion_maxima = np.argmax(tabla_q[estado])
+
+            # Crear la lista de acciones con un 1 en la dirección de la acción máxima
+            accion = [0] * n_acciones
+            accion[accion_maxima] = 1
+
+            # Asignar la política al estado actual
+            policies[estado_tupla] = accion
+
+        return policies
+    
 
 maze = [[0, 0, 0], [1, 1, 0], [0, 0, 0]]
 model = PoliceEnvironment(maze)
@@ -134,4 +163,10 @@ K = 2000
 
 tabla_Q, _ret = sarsa(model, ALPHA, GAMMA, EPSILON, len(model.states.keys()), 4, K)
 
+from utils import print_readable_dict
 print(tabla_Q)
+policy = model.generar_politica_policias(tabla_Q)
+
+print_readable_dict(policy)
+
+
