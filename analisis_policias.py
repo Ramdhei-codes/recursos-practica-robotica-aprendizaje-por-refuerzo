@@ -9,8 +9,8 @@ import requests
 url = "http://192.168.128.54:4747/video"
 
 # Parámetros de la cuadrícula
-rows = 4  # Número de filas
-cols = 4  # Número de columnas
+rows = 3  # Número de filas
+cols = 3  # Número de columnas
 thickness = 1  # Grosor de las líneas
 
 # Valores iniciales de Canny
@@ -270,20 +270,22 @@ def on_trackbar_change(x):
     """Callback para manejar los cambios en las trackbars."""
     pass
 
+SERVER_URL = "http://192.168.65.113:5000"
 def detect_shape_api():
-    url = "http://192.168.113.105:5000/detect_shapes"
-    payload = {"rows": 3, "cols": 3}
-    headers = {"Content-Type": "application/json"}
-    response = requests.post(url, json=payload, headers=headers)
-    print(response.json())
-    return response.json()
+    """Consume la API del servidor Flask para obtener las formas detectadas."""
+    try:
+        response = requests.get(f"{SERVER_URL}/detect_shapes")
+        response.raise_for_status()  # Lanza una excepción si ocurre un error HTTP
+        shapes = response.json()
+        return shapes
+    except requests.RequestException as e:
+        print(f"Error al conectar con el servidor: {e}")
+        return []
         
-def mover_robot(tablaQ, cell_index, x, y,angulo, center_x, center_y, politica_actual, politica_anterior, width, height):
+def mover_robot(tablaQ, cell_index, x, y,angulo, center_x, center_y, politica_actual, politica_anterior, width, height, role, rival_cell_index):
     tolerancia=5
-    accion = np.argmax(tablaQ[cell_index])
-    
-    print(f"Acción: {accion}")
-    print(f"Ángulo: {angulo}")
+    accion = np.argmax(tablaQ[(role, cell_index, rival_cell_index)])
+    print(f'Accion: {(role, cell_index, rival_cell_index)} {tablaQ[(role, cell_index, rival_cell_index)]}')
 
 
     
@@ -370,6 +372,18 @@ def mover_robot(tablaQ, cell_index, x, y,angulo, center_x, center_y, politica_ac
      
             
     return politica_actual, politica_anterior
+
+def get_maze():
+    """Obtiene el laberinto desde el servidor Flask."""
+    try:
+        response = requests.get(f"{SERVER_URL}/maze")
+        response.raise_for_status()
+        print("---------------------------------------------------------------------")
+        print(response.json)
+        return response.json()  # Devuelve el laberinto como una matriz
+    except requests.RequestException as e:
+        print(f"Error al obtener el laberinto del servidor: {e}")
+        return [[1 for _ in range(cols)] for _ in range(rows)] 
     
 
 # probabilidades = {
@@ -449,7 +463,8 @@ K = 2000
 
 #     print(maze)
 #     qr_detector = cv2.QRCodeDetector()
-maze = maze_generate(rows, cols)
+maze = get_maze()
+print(maze)
 robot = PoliceEnvironment(maze)
 probabilidades = select_algorithm_policies(robot, ALPHA, GAMMA, EPSILON, K, 'sarsa')
 contador=0
@@ -470,19 +485,22 @@ while True:
     # #detected_shapes=[{"shape": "triangle","row":1,"col": 0,"cell_index": 3,"x": 100,"y": 100}]
     
     detected_shapes = detect_shape_api()
-    #if contador% 50==0:
-    for shape in detected_shapes:
-        if shape["shape"] == "1":
-        # Obtener las coordenadas y llamar a mover_robot
-            cell_index = shape["cell_index"]
-            x = shape["x"]
-            y = shape["y"]
-            center_x= shape["cell_center_x"]
-            center_y= shape["cell_center_y"]
-            angulo = shape["angle"]
-            width = shape['cell_width']
-            height = shape['cell_height']
-            politica_actual, politica_anterior = mover_robot(probabilidades,cell_index,x,y,angulo,center_x, center_y, politica_actual, politica_anterior, width, height)
+    if contador % 25==0:
+        rival = [shape for shape in detected_shapes if shape["role"] == 1][0]
+        rival_cell_index = rival['cell_index']
+        for shape in detected_shapes:
+            if shape["role"] == 0:
+            # Obtener las coordenadas y llamar a mover_robot
+                cell_index = shape["cell_index"]
+                x = shape["x"]
+                y = shape["y"]
+                center_x= shape["cell_center_x"]
+                center_y= shape["cell_center_y"]
+                angulo = shape["angle"]
+                width = shape['cell_width']
+                height = shape['cell_height']
+                
+                politica_actual, politica_anterior = mover_robot(probabilidades,cell_index,x,y,angulo,center_x, center_y, politica_actual, politica_anterior, width, height, shape["role"], rival_cell_index)
     # #print(detected_shapes)
     # # Dibujar la cuadrícula en el frame
     # frame_with_grid = draw_grid(frame_with_shapes, rows, cols, thickness)

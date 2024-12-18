@@ -52,12 +52,12 @@ class PoliceEnvironment:
                             recompensa = 50  # Captura al ladrón
                         else:
                             i, j = divmod(pos_pol, n)
-                            recompensa = -1 if laberinto[i][j] == 0 else -20
+                            recompensa = -20 if laberinto[i][j] == 1 else -1
                     else:  # Ladrón
                         if pos_pol == pos_lad:
                             recompensa = -50  # Capturado por el policía
                         else:
-                            recompensa = calcular_distancia_manhattan(pos_pol, pos_lad)
+                            recompensa = calcular_distancia_manhattan(pos_pol, pos_lad)*10
 
                     estados[estado] = recompensa
 
@@ -150,24 +150,21 @@ class PoliceEnvironment:
             policies[estado_tupla] = accion
 
         return policies
-    
-
-maze = [[0, 0, 0], [1, 1, 0], [0, 0, 0]]
-model = PoliceEnvironment(maze)
-
-# Hiperparámetros
-ALPHA = 0.4
-GAMMA = 0.999
-EPSILON = 0.1 # (Probabilidad de escoger mejor acción = 1-0.1 = 0.9)
-K = 2000
 
 def select_algorithm_policies(model, ALPHA, GAMMA, EPSILON, K, algorithm):
+    print('Algorithm:', algorithm)
     if algorithm == 'sarsa':
         tabla_Q, _ret = sarsa(model, ALPHA, GAMMA, EPSILON, len(model.states.keys()), 4, K)
+        print(tabla_Q)
         return model.generar_politica_policias(tabla_Q)
     elif algorithm == 'qlearning':
         tabla_Q, _ret = qlearning(model, ALPHA, GAMMA, EPSILON, len(model.states.keys()), 4, K)
         return model.generar_politica_policias(tabla_Q)
+
+
+maze=[[0,0,0],[0,1,0],[0,0,0]]  
+
+print(select_algorithm_policies(PoliceEnvironment(maze), 0.4, 0.9, 0.1, 3000, 'sarsa'))
 
 
 
