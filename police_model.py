@@ -14,11 +14,12 @@ class PoliceEnvironment:
         self.states = self.generar_estados_laberinto(maze)
         self.n = len(maze)
         self.m = len(maze[0])
-        self.estado_actual = (0, 0, (self.n * self.m) -1)
+        self.estado_actual = (0, 0, np.random.randint(0, (self.n * self.m) -1))
         self.role = 0
         self.info = ''
         self.state_to_index = {state: idx for idx, state in enumerate(self.states.keys())}
         self.index_to_state = {idx: state for state, idx in self.state_to_index.items()}
+        self.movement_counter = 0
 
 
     def generar_estados_laberinto(self, laberinto):
@@ -49,18 +50,18 @@ class PoliceEnvironment:
 
                     if rol == 0:  # Policía
                         if pos_pol == pos_lad:
-                            recompensa = 50  # Captura al ladrón
+                            recompensa = 100  # Captura al ladrón
                         else:
                             i, j = divmod(pos_pol, n)
-                            recompensa = -1 if laberinto[i][j] == 0 else -20
+                            recompensa = -1 - (- calcular_distancia_manhattan(pos_pol, pos_lad)) if laberinto[i][j] == 0 else -100
                     else:  # Ladrón
                         if pos_pol == pos_lad:
-                            recompensa = -50  # Capturado por el policía
+                            recompensa = -100  # Capturado por el policía
                         else:
                             recompensa = calcular_distancia_manhattan(pos_pol, pos_lad)
 
                     estados[estado] = recompensa
-
+        print(estados)
         return estados
     
     def step(self, action):
@@ -73,6 +74,7 @@ class PoliceEnvironment:
         Returns:
             tuple: (nuevo_estado, recompensa, done)
         """
+        self.movement_counter += 1
         rol, pos_pol, pos_lad = self.estado_actual
         filas, columnas = self.n, self.m
         nueva_pos = pos_pol if rol == 0 else pos_lad
@@ -98,18 +100,13 @@ class PoliceEnvironment:
             nuevo_estado = (0, pos_pol, nueva_pos)
 
         # Calcular la recompensa
-        if nuevo_estado[1] == nuevo_estado[2]:  # Policía captura al ladrón
-            recompensa = 50 if rol == 0 else -50
-            done = True
+        done = nuevo_estado[1] == nuevo_estado[2] or self.movement_counter == self.n*10
+        recompensa = self.states[nuevo_estado]
+        
+        if self.estado_actual[0] == 0:
+            recompensa -= self.movement_counter
         else:
-            if rol == 0:  # Policía
-                i, j = divmod(nueva_pos, columnas)
-                recompensa = -1 if self.maze[i][j] == 0 else -20
-                done = False
-            else:  # Ladrón
-                distancia = abs(x - divmod(pos_pol, columnas)[0]) + abs(y - divmod(pos_pol, columnas)[1])
-                recompensa = distancia
-                done = False
+            recompensa += self.movement_counter
 
         self.estado_actual = nuevo_estado
         return self.state_to_index[nuevo_estado], recompensa, done, self.info
@@ -120,7 +117,8 @@ class PoliceEnvironment:
 
         :return: int, el estado inicial
         """
-        self.estado_actual = (0, 0, (self.n * self.m) -1)
+        self.estado_actual = (0, 0, np.random.randint(0, (self.n * self.m) -1))
+        self.movement_counter = 0
         return self.state_to_index[self.estado_actual]
     
     def generar_politica_policias(self, tabla_q):
