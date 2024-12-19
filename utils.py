@@ -150,5 +150,11 @@ def print_readable_dict(data):
         key_str = f"({', '.join(map(str, key))})"
         value_str = f"[{', '.join(map(str, value))}]"
         print(f"{key_str}: {value_str}")
+        
+def calcular_distancia_manhattan(pos1, pos2, n):
+    x1, y1 = divmod(pos1, n)
+    x2, y2 = divmod(pos2, n)
+    return abs(x1 - x2) + abs(y1 - y2)
 
+print(calcular_distancia_manhattan(0,7,3))
 

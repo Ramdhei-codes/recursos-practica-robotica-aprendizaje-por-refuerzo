@@ -270,7 +270,7 @@ def on_trackbar_change(x):
     """Callback para manejar los cambios en las trackbars."""
     pass
 
-SERVER_URL = "http://192.168.65.113:5000"
+SERVER_URL = "http://127.0.0.1:5000"
 def detect_shape_api():
     """Consume la API del servidor Flask para obtener las formas detectadas."""
     try:

@@ -23,93 +23,122 @@ class PoliceEnvironment:
 
 
     def generar_estados_laberinto(self, laberinto):
-        """
-        Genera todos los estados posibles para un modelo de Policías y Ladrones
-        y calcula las recompensas asociadas.
+            """
+            Genera todos los estados posibles para un modelo de Policías y Ladrones
+            y calcula las recompensas asociadas.
 
-        Args:
-            laberinto (list[list[int]]): Matriz n x n que representa el laberinto.
+            Args:
+                laberinto (list[list[int]]): Matriz n x n que representa el laberinto.
 
-        Returns:
-            dict: Diccionario donde las claves son los estados en formato (rol, pos_pol, pos_lad)
-                y los valores son las recompensas asociadas.
-        """
-        n = len(laberinto)  # Tamaño del laberinto (asume que es cuadrado)
-        num_casillas = n * n
-        estados = {}
+            Returns:
+                dict: Diccionario donde las claves son los estados en formato (rol, pos_pol, pos_lad)
+                    y los valores son las recompensas asociadas.
+            """
+            n = len(laberinto)  # Tamaño del laberinto (asume que es cuadrado)
+            num_casillas = n * n
+            estados = {}
 
-        def calcular_distancia_manhattan(pos1, pos2):
-            x1, y1 = divmod(pos1, n)
-            x2, y2 = divmod(pos2, n)
-            return abs(x1 - x2) + abs(y1 - y2)
+            def calcular_distancia_manhattan(pos1, pos2):
+                x1, y1 = divmod(pos1, n)
+                x2, y2 = divmod(pos2, n)
+                return abs(x1 - x2) + abs(y1 - y2)
 
-        for pos_pol in range(num_casillas):
-            for pos_lad in range(num_casillas):
-                for rol in [0, 1]:  # 0: Policía, 1: Ladrón
-                    estado = (rol, pos_pol, pos_lad)
+            for pos_pol in range(num_casillas):
+                for pos_lad in range(num_casillas):
+                    for rol in [0, 1]:  # 0: Policía, 1: Ladrón
+                        estado = (rol, pos_pol, pos_lad)
 
-                    if rol == 0:  # Policía
-                        if pos_pol == pos_lad:
-                            recompensa = 100  # Captura al ladrón
-                        else:
-                            i, j = divmod(pos_pol, n)
-                            recompensa = -1 - (- calcular_distancia_manhattan(pos_pol, pos_lad)) if laberinto[i][j] == 0 else -100
-                    else:  # Ladrón
-                        if pos_pol == pos_lad:
-                            recompensa = -100  # Capturado por el policía
-                        else:
-                            recompensa = calcular_distancia_manhattan(pos_pol, pos_lad)*10
+                        # Calcular distancia Manhattan
+                        distancia = calcular_distancia_manhattan(pos_pol, pos_lad)
 
-                    estados[estado] = recompensa
-        print(estados)
-        return estados
+                        if rol == 0:  # Policía
+                            if pos_pol == pos_lad:
+                                recompensa = 50  # Captura al ladrón
+                            else:
+                                i, j = divmod(pos_pol, n)
+                                # Penalizar más si el policía se acerca a una pared o realiza un movimiento poco útil
+                                penalizacion_pared = -10 if laberinto[i][j] == 1 else -2
+                                penalizacion_distancia = -1 * distancia
+                                recompensa = penalizacion_pared + penalizacion_distancia
+                        else:  # Ladrón
+                            if pos_pol == pos_lad:
+                                recompensa = -50  # Capturado por el policía
+                            else:
+                                # Recompensa por alejarse del policía y penalización si está cerca
+                                recompensa = distancia * 5 - (20 if distancia < 2 else 0)
+
+                        estados[estado] = recompensa
+
+            return estados
     
     def step(self, action):
-        """
-        Realiza una acción y actualiza el estado del entorno.
+            """
+            Realiza una acción y actualiza el estado del entorno.
 
-        Args:
-            action (int): Acción a realizar (0: UP, 1: DOWN, 2: LEFT, 3: RIGHT).
+            Args:
+                action (int): Acción a realizar (0: UP, 1: DOWN, 2: LEFT, 3: RIGHT).
 
-        Returns:
-            tuple: (nuevo_estado, recompensa, done)
-        """
-        self.movement_counter += 1
-        rol, pos_pol, pos_lad = self.estado_actual
-        filas, columnas = self.n, self.m
-        nueva_pos = pos_pol if rol == 0 else pos_lad
+            Returns:
+                tuple: (nuevo_estado, recompensa, done, info)
+            """
+            rol, pos_pol, pos_lad = self.estado_actual
+            filas, columnas = self.n, self.m
+            nueva_pos = pos_pol if rol == 0 else pos_lad
 
-        # Determinar nueva posición basada en la acción
-        x, y = divmod(nueva_pos, columnas)
+            # Determinar nueva posición basada en la acción
+            x, y = divmod(nueva_pos, columnas)
 
-        if action == 0 and x > 0:  # UP
-            x -= 1
-        elif action == 1 and x < filas - 1:  # DOWN
-            x += 1
-        elif action == 2 and y > 0:  # LEFT
-            y -= 1
-        elif action == 3 and y < columnas - 1:  # RIGHT
-            y += 1
+            if action == 0 and x > 0:  # UP
+                x -= 1
+            elif action == 1 and x < filas - 1:  # DOWN
+                x += 1
+            elif action == 2 and y > 0:  # LEFT
+                y -= 1
+            elif action == 3 and y < columnas - 1:  # RIGHT
+                y += 1
 
-        nueva_pos = x * columnas + y
-        nuevo_estado = ()
-        # Actualizar el estado basado en el rol
-        if rol == 0:  # Policía
-            nuevo_estado = (1, nueva_pos, pos_lad)
-        else:  # Ladrón
-            nuevo_estado = (0, pos_pol, nueva_pos)
+            nueva_pos = x * columnas + y
+            nuevo_estado = ()
 
-        # Calcular la recompensa
-        done = nuevo_estado[1] == nuevo_estado[2] or self.movement_counter == self.n*10
-        recompensa = self.states[nuevo_estado]
-        
-        if self.estado_actual[0] == 0:
-            recompensa -= self.movement_counter
-        else:
-            recompensa += self.movement_counter
+            # Actualizar el estado basado en el rol
+            if rol == 0:  # Policía
+                nuevo_estado = (1, nueva_pos, pos_lad)
+            else:  # Ladrón
+                nuevo_estado = (0, pos_pol, nueva_pos)
 
-        self.estado_actual = nuevo_estado
-        return self.state_to_index[nuevo_estado], recompensa, done, self.info
+            # Calcular recompensa
+            recompensa = 0
+            done = False
+
+            if nuevo_estado[1] == nuevo_estado[2]:  # Policía captura al ladrón
+                recompensa = 150 if rol == 0 else -150
+                done = True
+            else:
+                if rol == 0:  # Policía
+                    # Penalización por moverse a una pared
+                    i, j = divmod(nueva_pos, columnas)
+                    penalizacion_pared = -200 if self.maze[i][j] == 1 else -1
+
+                    # Penalización por no reducir distancia con el ladrón
+                    distancia_anterior = abs(pos_pol // columnas - pos_lad // columnas) + abs(pos_pol % columnas - pos_lad % columnas)
+                    distancia_nueva = abs(x - pos_lad // columnas) + abs(y - pos_lad % columnas)
+                    penalizacion_distancia = -1 if distancia_nueva >= distancia_anterior else 5
+
+                    recompensa = penalizacion_pared + penalizacion_distancia
+                else:  # Ladrón
+                    # Recompensa por aumentar distancia con el policía
+                    distancia_anterior = abs(pos_pol // columnas - pos_lad // columnas) + abs(pos_pol % columnas - pos_lad % columnas)
+                    distancia_nueva = abs(pos_pol // columnas - x) + abs(pos_pol % columnas - y)
+                    recompensa_distancia = 10 if distancia_nueva > distancia_anterior else -5
+
+                    # Penalización adicional si queda cerca del policía
+                    penalizacion_cercania = -20 if distancia_nueva < 2 else 0
+
+                    recompensa = recompensa_distancia + penalizacion_cercania
+
+            # Actualizar estado actual
+            self.estado_actual = nuevo_estado
+            return self.state_to_index[nuevo_estado], recompensa, done, self.info
     
     def reset(self):
         """
@@ -162,7 +191,7 @@ def select_algorithm_policies(model, ALPHA, GAMMA, EPSILON, K, algorithm):
 
 maze=[[0,0,0],[0,1,0],[0,0,0]]  
 
-print(select_algorithm_policies(PoliceEnvironment(maze), 0.4, 0.9, 0.1, 3000, 'sarsa'))
+print(select_algorithm_policies(PoliceEnvironment(maze), 0.4, 0.9, 0.2, 3000, 'sarsa'))
 
 
 
