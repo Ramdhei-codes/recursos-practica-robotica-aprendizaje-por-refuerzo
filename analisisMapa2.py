@@ -6,11 +6,11 @@ from rl_model import RobotEnvironment, select_algorithm
 from comunicacionBluethoot import send_command
 import requests
 # URL de DroidCam
-url = "http://192.168.131.198:4747/video"
+url = "http://10.107.249.168:4747/video"
 
 # Parámetros de la cuadrícula
-rows = 3  # Número de filas
-cols = 3  # Número de columnas
+rows = 4  # Número de filas
+cols = 4  # Número de columnas
 thickness = 1  # Grosor de las líneas
 
 # Valores iniciales de Canny
@@ -339,7 +339,7 @@ def mover_robot(tablaQ, cell_index, x, y,angulo, center_x, center_y, politica_ac
             send_command('w')
             send_command('w')
             print("segundo if")
-        elif angulo >= 270 + tolerancia and angulo < 90:
+        elif angulo >= 270 + tolerancia or angulo < 90:
             send_command('d')
             send_command('d')
             send_command('d')
@@ -491,7 +491,7 @@ else:
         detected_shapes, frame_with_shapes = detect_shapes_in_image(frame, rows, cols, qr_detector)
         #detected_shapes=[{"shape": "triangle","row":1,"col": 0,"cell_index": 3,"x": 100,"y": 100}]
         
-        if contador% 50==0:
+        if contador% 75==0:
             for shape in detected_shapes:
                 # Obtener las coordenadas y llamar a mover_robot
                 cell_index = shape["cell_index"]
