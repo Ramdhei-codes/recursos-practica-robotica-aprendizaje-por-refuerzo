@@ -58,7 +58,7 @@ class PoliceEnvironment:
                         if pos_pol == pos_lad:
                             recompensa = -100  # Capturado por el policía
                         else:
-                            recompensa = calcular_distancia_manhattan(pos_pol, pos_lad)
+                            recompensa = calcular_distancia_manhattan(pos_pol, pos_lad)*10
 
                     estados[estado] = recompensa
         print(estados)
@@ -148,23 +148,21 @@ class PoliceEnvironment:
             policies[estado_tupla] = accion
 
         return policies
-    
 
-maze = [[0, 0, 0], [1, 1, 0], [0, 0, 0]]
-model = PoliceEnvironment(maze)
+def select_algorithm_policies(model, ALPHA, GAMMA, EPSILON, K, algorithm):
+    print('Algorithm:', algorithm)
+    if algorithm == 'sarsa':
+        tabla_Q, _ret = sarsa(model, ALPHA, GAMMA, EPSILON, len(model.states.keys()), 4, K)
+        print(tabla_Q)
+        return model.generar_politica_policias(tabla_Q)
+    elif algorithm == 'qlearning':
+        tabla_Q, _ret = qlearning(model, ALPHA, GAMMA, EPSILON, len(model.states.keys()), 4, K)
+        return model.generar_politica_policias(tabla_Q)
 
-# Hiperparámetros
-ALPHA = 0.4
-GAMMA = 0.999
-EPSILON = 0.1 # (Probabilidad de escoger mejor acción = 1-0.1 = 0.9)
-K = 2000
 
-tabla_Q, _ret = sarsa(model, ALPHA, GAMMA, EPSILON, len(model.states.keys()), 4, K)
+maze=[[0,0,0],[0,1,0],[0,0,0]]  
 
-from utils import print_readable_dict
-print(tabla_Q)
-policy = model.generar_politica_policias(tabla_Q)
+print(select_algorithm_policies(PoliceEnvironment(maze), 0.4, 0.9, 0.1, 3000, 'sarsa'))
 
-print_readable_dict(policy)
 
 

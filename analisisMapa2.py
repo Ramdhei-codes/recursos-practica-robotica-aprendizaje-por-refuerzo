@@ -4,12 +4,13 @@ import random
 import math
 from rl_model import RobotEnvironment, select_algorithm
 from comunicacionBluethoot import send_command
+import requests
 # URL de DroidCam
-url = "http://192.168.128.54:4747/video"
+url = "http://192.168.131.198:4747/video"
 
 # Parámetros de la cuadrícula
-rows = 4  # Número de filas
-cols = 4  # Número de columnas
+rows = 3  # Número de filas
+cols = 3  # Número de columnas
 thickness = 1  # Grosor de las líneas
 
 # Valores iniciales de Canny
@@ -18,6 +19,20 @@ canny_threshold2 = 150
 
 politica_anterior = 3
 politica_actual = 3
+
+SERVER_URL = "http://192.168.65.113:5000"
+
+def get_maze():
+    """Obtiene el laberinto desde el servidor Flask."""
+    try:
+        response = requests.get(f"{SERVER_URL}/maze")
+        response.raise_for_status()
+        print("---------------------------------------------------------------------")
+        print(response.json)
+        return response.json()  # Devuelve el laberinto como una matriz
+    except requests.RequestException as e:
+        print(f"Error al obtener el laberinto del servidor: {e}")
+        return [[1 for _ in range(cols)] for _ in range(rows)] 
 
 def maze_generate(filas, columnas):
     """
@@ -309,7 +324,11 @@ def mover_robot(tablaQ, cell_index, x, y,angulo, center_x, center_y, politica_ac
             send_command('a')
             send_command('a')
             send_command('a')
+            send_command('a')
+            send_command('a')
         elif angulo <= 90 - tolerancia:
+            send_command('d')
+            send_command('d')
             send_command('d')
             send_command('d')
             send_command('d')
@@ -324,7 +343,11 @@ def mover_robot(tablaQ, cell_index, x, y,angulo, center_x, center_y, politica_ac
             send_command('d')
             send_command('d')
             send_command('d')
+            send_command('d')
+            send_command('d')
         elif angulo <= 270 - tolerancia:
+            send_command('a')
+            send_command('a')
             send_command('a')
             send_command('a')
             send_command('a')
@@ -339,7 +362,11 @@ def mover_robot(tablaQ, cell_index, x, y,angulo, center_x, center_y, politica_ac
             send_command('d')
             send_command('d')
             send_command('d')
+            send_command('d')
+            send_command('d')
         elif angulo <= 180 - tolerancia: 
+            send_command('a')
+            send_command('a')
             send_command('a')
             send_command('a')
             send_command('a')
@@ -354,11 +381,14 @@ def mover_robot(tablaQ, cell_index, x, y,angulo, center_x, center_y, politica_ac
             send_command('a')
             send_command('a')
             send_command('a')
+            send_command('a')
+            send_command('a')
         elif angulo <= 360 - tolerancia:
             send_command('d')
             send_command('d')
             send_command('d')
-     
+            send_command('d')
+            send_command('d')
             
     return politica_actual, politica_anterior
     
@@ -418,6 +448,8 @@ probabilidades = {
 # Abre el video desde la URL
 cap = cv2.VideoCapture(url)
 #cap = cv2.VideoCapture(0)
+maze = get_maze()
+
 if not cap.isOpened():
     print("No se pudo conectar a la cámara en la URL proporcionada.")
 else:
@@ -428,7 +460,7 @@ else:
     cv2.createTrackbar('Canny Th1', 'Ajustes', canny_threshold1, 255, on_trackbar_change)
     cv2.createTrackbar('Canny Th2', 'Ajustes', canny_threshold2, 255, on_trackbar_change)
     cv2.createTrackbar('Dilatacion', 'Ajustes', 2, 15, on_trackbar_change)
-    maze = maze_generate(rows, cols)
+
     # Hiperparámetros
     ALPHA = 0.4
     GAMMA = 0.999
