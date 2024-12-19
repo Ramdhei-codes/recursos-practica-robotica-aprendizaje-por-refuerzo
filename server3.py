@@ -12,9 +12,9 @@ camera = cv2.VideoCapture("http://192.168.1.69:4747/video")  # Abrir la cámara
 latest_frame = None
 aruco_dict = cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_4X4_50)
 parameters = cv2.aruco.DetectorParameters()
-rows = 3
-cols = 3
-maze=[[0,0,0],[0,1,0],[0,0,0]]
+rows = 4
+cols = 4
+maze=[[0,0,0,1],[0,1,0,1],[1,0,0,0],[0,0,0,1]]
 roles={
     8:0, #El valor 8 será el policía
     9:1  #El valor 1 será el ladrón

@@ -137,6 +137,14 @@ def select_algorithm(model, ALPHA, GAMMA, EPSILON, K, algorithm):
         return generar_politica(tabla_Q)
     else:
         raise ValueError('Algoritmo no válido')
+    
+tabla_Q, _ret = qlearning(model, ALPHA, GAMMA, EPSILON, len(model.states.keys()), 4, K)
+
+from utils import print_readable_dict
+print(tabla_Q)
+policy = generar_politica(tabla_Q)
+
+print(policy)
 
 
     

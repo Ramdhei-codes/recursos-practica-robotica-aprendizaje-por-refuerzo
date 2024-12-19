@@ -284,8 +284,15 @@ def detect_shape_api():
         
 def mover_robot(tablaQ, cell_index, x, y,angulo, center_x, center_y, politica_actual, politica_anterior, width, height, role, rival_cell_index):
     tolerancia=5
-    accion = np.argmax(tablaQ[(role, cell_index, rival_cell_index)])
-    print(f'Accion: {(role, cell_index, rival_cell_index)} {tablaQ[(role, cell_index, rival_cell_index)]}')
+    accion = []
+    if role == 0:
+        accion = np.argmax(tablaQ[(role, cell_index, rival_cell_index)])
+        print(f'Accion: {(role, cell_index, rival_cell_index)} {tablaQ[(role, cell_index, rival_cell_index)]}')
+    if role == 1:
+        accion = np.argmax(tablaQ[(role, rival_cell_index, cell_index)])
+        print(f'Accion: {(role, rival_cell_index, cell_index)} {tablaQ[(role, rival_cell_index, cell_index)]}')
+
+ 
 
 
     
@@ -307,7 +314,6 @@ def mover_robot(tablaQ, cell_index, x, y,angulo, center_x, center_y, politica_ac
         else:
             send_command("w")
             send_command("w")
-            send_command("w")
             print("calibrando", x, y)
     #if (accion == 0 and (angulo <= 90 + tolerancia and angulo >= 90 - tolerancia)) or (accion == 1 and (angulo <= 270 + tolerancia and angulo >= 270 - tolerancia)) or (accion == 2 and (angulo <= 180 + tolerancia and angulo >= 180 - tolerancia)) or (accion == 3 and (angulo <=  tolerancia or angulo >= 360 - tolerancia)):
         print("acción", accion, "angulo", angulo)
@@ -315,27 +321,27 @@ def mover_robot(tablaQ, cell_index, x, y,angulo, center_x, center_y, politica_ac
         if angulo <= 90 + tolerancia and angulo >= 90 - tolerancia:
             send_command('w')
             send_command('w')
-            send_command("w")
+            # send_command("w")
         elif angulo >= 90 + tolerancia:
-            send_command('a')
-            send_command('a')
-            send_command('a')
+            send_command('d')
+            send_command('d')
+            send_command('d')
         elif angulo <= 90 - tolerancia:
-            send_command('d')
-            send_command('d')
-            send_command('d')
+            send_command('a')
+            send_command('a')
+            send_command('a')
             
     elif  accion == 1:
         if angulo <= 270 + tolerancia and angulo >=270 - tolerancia:
             send_command('w')
             send_command('w')
-            send_command('w')
+            # send_command('w')
             print("segundo if")
-        elif angulo >= 270 + tolerancia:
+        elif angulo >= 270 + tolerancia and angulo < 90:
             send_command('d')
             send_command('d')
             send_command('d')
-        elif angulo <= 270 - tolerancia:
+        elif angulo <= 270 - tolerancia and angulo > 90:
             send_command('a')
             send_command('a')
             send_command('a')
@@ -344,7 +350,7 @@ def mover_robot(tablaQ, cell_index, x, y,angulo, center_x, center_y, politica_ac
         if angulo <= 180 + tolerancia and angulo >= 180 - tolerancia:
             send_command('w')
             send_command('w')
-            send_command('w')
+            # send_command('w')
             print("tercero if")
         elif angulo >= 180 + tolerancia:
             send_command('d')
@@ -359,16 +365,16 @@ def mover_robot(tablaQ, cell_index, x, y,angulo, center_x, center_y, politica_ac
         if angulo <=  tolerancia or angulo >= 360 - tolerancia:
             send_command('w')
             send_command('w')
-            send_command('w')
+            # send_command('w')
             print("cuarto if")
-        elif angulo >=  tolerancia:
-            send_command('a')
-            send_command('a')
-            send_command('a')
-        elif angulo <= 360 - tolerancia:
+        elif angulo >=  tolerancia and angulo <= 180:
             send_command('d')
             send_command('d')
             send_command('d')
+        elif angulo <= 360 - tolerancia and angulo >= 180:
+            send_command('a')
+            send_command('a')
+            send_command('a')
      
             
     return politica_actual, politica_anterior
@@ -384,85 +390,11 @@ def get_maze():
     except requests.RequestException as e:
         print(f"Error al obtener el laberinto del servidor: {e}")
         return [[1 for _ in range(cols)] for _ in range(rows)] 
-    
-
-# probabilidades = {
-#         0: [0, 0, 0, 1],  # Moverse a la derecha
-#         1: [0, 0, 0, 1],  # Moverse a la derecha
-#         2: [0, 1, 0, 0],  # Moverse abajo
-#         3: [0, 1, 0, 0],  # Moverse a la izquierda
-#         4: [0, 0, 1, 0],  # Moverse a la izquierda
-#         5: [0, 0, 1, 0],  # Moverse abajo
-#         6: [0, 0, 0, 1],  # Moverse a la derecha
-#         7: [0, 0, 0, 1],  # Moverse a la derecha
-#         8: [0, 0, 0, 0],  # Detenerse
-#     }
-
-# probabilidades = {
-#         0: [0, 0, 0, 1],  # Moverse a la derecha
-#         1: [0, 0, 0, 1],  # Moverse a la derecha
-#         2: [0, 0, 0, 1],  # Moverse abajo
-#         3: [0, 0, 0, 1],  # Moverse a la izquierda
-#         4: [0, 0, 0, 1],  # Moverse a la izquierda
-#         5: [0, 1, 0, 0],  # Moverse abajo
-#         6: [0, 1, 0, 1],  # Moverse a la derecha
-#         7: [0, 0, 1, 0],  
-#         8: [0, 0, 1, 0],
-#         9: [0, 0, 1, 0],
-#         10: [0, 0, 1, 0],  
-#         11: [0, 0, 1, 0],
-#         12: [0, 0, 0, 1],
-#         13: [0, 0, 0, 1],
-#         14: [0, 0, 0, 1],
-#         15: [0, 0, 0, 1],
-#         16: [0, 0, 0, 1],
-#         17: [0, 1, 0, 0],
-#         18: [0, 1, 0, 0],
-#         19: [0, 0, 1, 0], 
-#         20: [0, 0, 1, 0], 
-#         21: [0, 0, 1, 0], 
-#         22: [0, 0, 1, 0], 
-#         23: [0, 0, 1, 0], 
-#         24: [0, 0, 0, 1], 
-#         25: [0, 0, 0, 1], 
-#         26: [0, 0, 0, 1], 
-#         27: [0, 0, 0, 1], 
-#         28: [0, 0, 0, 1], 
-#         29: [0, 1, 0, 0], 
-#         30: [0, 0, 0, 0], 
-#         31: [0, 0, 1, 0],
-#         32: [0, 0, 1, 0],
-#         33: [0, 0, 1, 0],
-#         34: [0, 0, 1, 0],
-#         35: [0, 0, 1, 0],
-#     }
-
-
-# Abre el video desde la URL
-#cap = cv2.VideoCapture(url)
-# #cap = cv2.VideoCapture(0)
-# if not cap.isOpened():
-#     print("No se pudo conectar a la cámara en la URL proporcionada.")
-# else:
-#     print(f"Conexión exitosa. Analizando video con cuadrícula de {rows}x{cols}...")
-
-#     # Crear ventana y trackbars
-#     cv2.namedWindow('Ajustes')
-#     cv2.createTrackbar('Canny Th1', 'Ajustes', canny_threshold1, 255, on_trackbar_change)
-#     cv2.createTrackbar('Canny Th2', 'Ajustes', canny_threshold2, 255, on_trackbar_change)
-#     cv2.createTrackbar('Dilatacion', 'Ajustes', 2, 15, on_trackbar_change)
-#     maze = maze_generate(rows, cols)
 #     # Hiperparámetros
 ALPHA = 0.4
 GAMMA = 0.999
 EPSILON = 0.1 # (Probabilidad de escoger mejor acción = 1-0.1 = 0.9)
 K = 2000
-#     robot = RobotEnvironment(maze)
-#     probabilidades = select_algorithm(robot, ALPHA, GAMMA, EPSILON, K, 'sarsa')
-#     print(probabilidades)
-
-#     print(maze)
-#     qr_detector = cv2.QRCodeDetector()
 maze = get_maze()
 print(maze)
 robot = PoliceEnvironment(maze)
@@ -470,22 +402,9 @@ probabilidades = select_algorithm_policies(robot, ALPHA, GAMMA, EPSILON, K, 'sar
 contador=0
 while True:
     contador +=1
-    # ret, frame = cap.read()
-    # if not ret:
-    #     print("Error al capturar el video.")
-    #     break
-
-    # # Obtener valores de las trackbars
-    # threshold1 = cv2.getTrackbarPos('Canny Th1', 'Ajustes')
-    # threshold2 = cv2.getTrackbarPos('Canny Th2', 'Ajustes')
-    # dilatacion = cv2.getTrackbarPos('Dilatacion', 'Ajustes')
-
-    # # Analizar el frame con los umbrales ajustados
-    # detected_shapes, frame_with_shapes = detect_shapes_in_image(frame, rows, cols, qr_detector)
-    # #detected_shapes=[{"shape": "triangle","row":1,"col": 0,"cell_index": 3,"x": 100,"y": 100}]
     
     detected_shapes = detect_shape_api()
-    if contador % 25==0:
+    if contador % 50==0:
         rival = [shape for shape in detected_shapes if shape["role"] == 1][0]
         rival_cell_index = rival['cell_index']
         for shape in detected_shapes:
@@ -501,19 +420,3 @@ while True:
                 height = shape['cell_height']
                 
                 politica_actual, politica_anterior = mover_robot(probabilidades,cell_index,x,y,angulo,center_x, center_y, politica_actual, politica_anterior, width, height, shape["role"], rival_cell_index)
-    # #print(detected_shapes)
-    # # Dibujar la cuadrícula en el frame
-    # frame_with_grid = draw_grid(frame_with_shapes, rows, cols, thickness)
-
-    # frame=fill_cells(frame_with_grid,maze)
-    # frame = highlight_start_end(frame, rows, cols)
-    # # Mostrar el frame con los ajustes
-    # cv2.imshow('Cuadrícula con análisis', frame_with_grid)
-
-    # # Presiona 'q' para salir
-    # if cv2.waitKey(1) & 0xFF == ord('q'):
-    #     break
-
-# Libera recursos
-# cap.release()
-# cv2.destroyAllWindows()

@@ -10,11 +10,12 @@ class PoliceEnvironment:
             3: 'RIGHT'
         }
         
-        self.maze = maze 
+        self.maze = maze
+        self.role = 0 
         self.states = self.generar_estados_laberinto(maze)
         self.n = len(maze)
         self.m = len(maze[0])
-        self.estado_actual = (0, 0, np.random.randint(0, (self.n * self.m) -1))
+        self.estado_actual = (self.role, 0, np.random.randint(0, (self.n * self.m) -1))
         self.role = 0
         self.info = ''
         self.state_to_index = {state: idx for idx, state in enumerate(self.states.keys())}
@@ -102,9 +103,9 @@ class PoliceEnvironment:
 
             # Actualizar el estado basado en el rol
             if rol == 0:  # Policía
-                nuevo_estado = (1, nueva_pos, pos_lad)
+                nuevo_estado = (rol, nueva_pos, pos_lad)
             else:  # Ladrón
-                nuevo_estado = (0, pos_pol, nueva_pos)
+                nuevo_estado = (rol, pos_pol, nueva_pos)
 
             # Calcular recompensa
             recompensa = 0
@@ -126,15 +127,11 @@ class PoliceEnvironment:
 
                     recompensa = penalizacion_pared + penalizacion_distancia
                 else:  # Ladrón
-                    # Recompensa por aumentar distancia con el policía
-                    distancia_anterior = abs(pos_pol // columnas - pos_lad // columnas) + abs(pos_pol % columnas - pos_lad % columnas)
-                    distancia_nueva = abs(pos_pol // columnas - x) + abs(pos_pol % columnas - y)
-                    recompensa_distancia = 10 if distancia_nueva > distancia_anterior else -5
+                    recompensa_distancia = 15 if distancia_nueva > distancia_anterior else -5
+                    penalizacion_cercania = -30 if distancia_nueva < 2 else 0
+                    bonificacion_escape = 20 if distancia_nueva > 3 else 0  # Mayor recompensa por escapar significativamente
 
-                    # Penalización adicional si queda cerca del policía
-                    penalizacion_cercania = -20 if distancia_nueva < 2 else 0
-
-                    recompensa = recompensa_distancia + penalizacion_cercania
+                    recompensa = recompensa_distancia + penalizacion_cercania + bonificacion_escape
 
             # Actualizar estado actual
             self.estado_actual = nuevo_estado
@@ -147,6 +144,7 @@ class PoliceEnvironment:
         :return: int, el estado inicial
         """
         self.estado_actual = (0, 0, np.random.randint(0, (self.n * self.m) -1))
+        self.role = 1 if self.role == 0 else 0
         self.movement_counter = 0
         return self.state_to_index[self.estado_actual]
     
