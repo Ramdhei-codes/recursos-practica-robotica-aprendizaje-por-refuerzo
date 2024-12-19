@@ -9,8 +9,8 @@ import requests
 url = "http://10.107.249.168:4747/video"
 
 # Parámetros de la cuadrícula
-rows = 4  # Número de filas
-cols = 4  # Número de columnas
+rows = 5  # Número de filas
+cols = 5  # Número de columnas
 thickness = 1  # Grosor de las líneas
 
 # Valores iniciales de Canny
@@ -23,16 +23,15 @@ politica_actual = 3
 SERVER_URL = "http://192.168.65.113:5000"
 
 def get_maze():
-    """Obtiene el laberinto desde el servidor Flask."""
+    url = "https://77c1-2803-1800-4202-201-d89c-e9f9-d163-b844.ngrok-free.app/maze"
     try:
-        response = requests.get(f"{SERVER_URL}/maze")
-        response.raise_for_status()
-        print("---------------------------------------------------------------------")
-        print(response.json)
-        return response.json()  # Devuelve el laberinto como una matriz
-    except requests.RequestException as e:
-        print(f"Error al obtener el laberinto del servidor: {e}")
-        return [[1 for _ in range(cols)] for _ in range(rows)] 
+        response = requests.get(url)
+        response.raise_for_status()  # Lanza una excepción si hay un error HTTP
+        data = response.json()  # Convierte la respuesta JSON a un diccionario
+        return data  # Devuelve la lista de listas
+    except requests.exceptions.RequestException as e:
+        print(f"An error occurred: {e}")
+        return None 
 
 def maze_generate(filas, columnas):
     """
@@ -448,7 +447,7 @@ probabilidades = {
 # Abre el video desde la URL
 cap = cv2.VideoCapture(url)
 #cap = cv2.VideoCapture(0)
-maze = maze_generate(rows, cols)
+maze = get_maze()
 
 if not cap.isOpened():
     print("No se pudo conectar a la cámara en la URL proporcionada.")
