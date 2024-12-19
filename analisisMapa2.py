@@ -339,13 +339,13 @@ def mover_robot(tablaQ, cell_index, x, y,angulo, center_x, center_y, politica_ac
             send_command('w')
             send_command('w')
             print("segundo if")
-        elif angulo >= 270 + tolerancia:
+        elif angulo >= 270 + tolerancia and angulo < 90:
             send_command('d')
             send_command('d')
             send_command('d')
             send_command('d')
             send_command('d')
-        elif angulo <= 270 - tolerancia:
+        elif angulo <= 270 - tolerancia and angulo > 90:
             send_command('a')
             send_command('a')
             send_command('a')
@@ -448,7 +448,7 @@ probabilidades = {
 # Abre el video desde la URL
 cap = cv2.VideoCapture(url)
 #cap = cv2.VideoCapture(0)
-maze = get_maze()
+maze = maze_generate(rows, cols)
 
 if not cap.isOpened():
     print("No se pudo conectar a la cámara en la URL proporcionada.")
